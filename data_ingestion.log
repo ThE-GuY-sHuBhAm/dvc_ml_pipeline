@@ -1,5 +1,0 @@
-2026-01-20 20:59:29,030 - data_ingestion - ERROR - Failed to complete the data ingestion process: 'NoneType' object is not subscriptable
-2026-01-20 21:08:29,917 - data_ingestion - ERROR - Error loading data from ml-pipeline-imdb-movies-review\dataaw\IMDB Dataset.csv: [Errno 22] Invalid argument: 'ml-pipeline-imdb-movies-review\\data\raw\\IMDB Dataset.csv'
-2026-01-20 21:08:29,918 - data_ingestion - ERROR - Failed to complete the data ingestion process: [Errno 22] Invalid argument: 'ml-pipeline-imdb-movies-review\\data\raw\\IMDB Dataset.csv'
-2026-01-20 21:21:22,572 - data_preprocessing - ERROR - Error in text normalization: 'str' object has no attribute 'str'
-2026-01-20 21:21:22,572 - data_preprocessing - ERROR - Error in data preprocessing pipeline: 'str' object has no attribute 'str'
