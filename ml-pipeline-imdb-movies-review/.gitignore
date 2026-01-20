@@ -1,6 +1,7 @@
 # Virtual environments
 myenv/
-env/
+*.log
+venv/
 
 # ML artifacts
 models/
