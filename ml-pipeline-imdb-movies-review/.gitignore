@@ -7,9 +7,6 @@ venv/
 models/
 reports/
 
-# Logs
-*.log
-
 # Byte-compiled / optimized files
 __pycache__/
 *.py[cod]
@@ -51,3 +48,4 @@ data/*
 
 # Mypy
 .mypy_cache/
+/reports

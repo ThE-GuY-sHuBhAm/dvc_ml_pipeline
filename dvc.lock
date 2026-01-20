@@ -1,0 +1,94 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python ml-pipeline-imdb-movies-review/src/data/data_ingestion.py
+    deps:
+    - path: ml-pipeline-imdb-movies-review/src/data/data_ingestion.py
+      hash: md5
+      md5: 9b27a7962425f0f5dbd5305eee6615c6
+      size: 3400
+    params:
+      params.yaml:
+        data_ingestion.test_size: 0.2
+    outs:
+    - path: ml-pipeline-imdb-movies-review/data/raw
+      hash: md5
+      md5: a7d6abccfbc5019f33b89bd3bb46bc4a.dir
+      size: 26365344
+      nfiles: 2
+  data_preprocessing:
+    cmd: python ml-pipeline-imdb-movies-review/src/data/data_preprocessing.py
+    deps:
+    - path: ml-pipeline-imdb-movies-review/data/raw
+      hash: md5
+      md5: a7d6abccfbc5019f33b89bd3bb46bc4a.dir
+      size: 26365344
+      nfiles: 2
+    - path: ml-pipeline-imdb-movies-review/src/data/data_preprocessing.py
+      hash: md5
+      md5: 1af267d0c898d63bfa9ebac30fd3c863
+      size: 7824
+    outs:
+    - path: ml-pipeline-imdb-movies-review/data/interim
+      hash: md5
+      md5: e6c9dab3f4d1245d3020c33ddf1fef44.dir
+      size: 16171250
+      nfiles: 2
+  feature_engineering:
+    cmd: python 
+      ml-pipeline-imdb-movies-review/src/features/feature_engineering.py
+    deps:
+    - path: ml-pipeline-imdb-movies-review/data/interim
+      hash: md5
+      md5: e6c9dab3f4d1245d3020c33ddf1fef44.dir
+      size: 16171250
+      nfiles: 2
+    params:
+      params.yaml:
+        feature_engineering.max_features: 5000
+        feature_engineering.ngram_range:
+        - 1
+        - 2
+    outs:
+    - path: ml-pipeline-imdb-movies-review/data/processed
+      hash: md5
+      md5: d638e48a899d05730362c9f0b70649cf.dir
+      size: 426978593
+      nfiles: 2
+  model_building:
+    cmd: python ml-pipeline-imdb-movies-review/src/models/model_building.py
+    deps:
+    - path: ml-pipeline-imdb-movies-review/data/processed
+      hash: md5
+      md5: d638e48a899d05730362c9f0b70649cf.dir
+      size: 426978593
+      nfiles: 2
+    params:
+      params.yaml:
+        model_building.learning_rate: 0.1
+        model_building.n_estimators: 100
+    outs:
+    - path: ml-pipeline-imdb-movies-review/models
+      hash: md5
+      md5: b4590b0fd94613f138265bf652ae099b.dir
+      size: 139452
+      nfiles: 1
+  model_evaluation:
+    cmd: python ml-pipeline-imdb-movies-review/src/models/model_evaluation.py
+    deps:
+    - path: ml-pipeline-imdb-movies-review/data/processed
+      hash: md5
+      md5: d638e48a899d05730362c9f0b70649cf.dir
+      size: 426978593
+      nfiles: 2
+    - path: ml-pipeline-imdb-movies-review/src/models
+      hash: md5
+      md5: 3141e4e5776d650fadd9538893cf7dbe.dir
+      size: 6715
+      nfiles: 3
+    outs:
+    - path: ml-pipeline-imdb-movies-review/reports
+      hash: md5
+      md5: 7c2499e2d1dfbd52e3ead6a8206d09a7.dir
+      size: 138
+      nfiles: 1
