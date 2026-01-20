@@ -1,0 +1,52 @@
+# Virtual environments
+myenv/
+env/
+
+# ML artifacts
+models/
+reports/
+
+# Logs
+*.log
+
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+
+# Distribution / packaging
+.Python
+build/
+dist/
+.eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.coverage*
+.cache
+nosetests.xml
+coverage.xml
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+
+# Data (tracked via DVC or scripts)
+data/*
+!data/README.md
+
+# IDEs
+.idea/
+.vscode/
+.spyproject/
+
+# OS files
+.DS_Store
+
+# Mypy
+.mypy_cache/
