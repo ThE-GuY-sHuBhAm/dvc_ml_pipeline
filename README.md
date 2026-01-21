@@ -26,7 +26,7 @@ The ML problem is intentionally kept simple so that the focus remains on **engin
 
 To closely resemble real-world ML systems, the project incorporates the following practices:
 
-- **Modular code structure**, separating data ingestion, preprocessing, feature engineering, and model training
+- **Modular code structure**, separating data ingestion, preprocessing, feature engineering, model training  and model evaluation
 - **Centralized configuration management** using `params.yaml`
 - **Robust exception handling** to make pipeline stages fault-tolerant
 - **Structured logging** for better traceability and debugging
@@ -44,6 +44,7 @@ The workflow follows a modular pipeline approach:
 - Data preprocessing
 - Feature engineering
 - Model training
+- Model Evaluation
 - Model versioning with DVC
 
 Each stage is tracked using **DVC**, ensuring that changes in data, parameters, or code automatically trigger the appropriate pipeline re-execution.
