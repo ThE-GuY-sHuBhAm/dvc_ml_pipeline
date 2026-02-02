@@ -4,7 +4,6 @@ myenv/
 venv/
 
 # ML artifacts
-models/
 reports/
 
 # Byte-compiled / optimized files
