@@ -4,6 +4,7 @@ import os
 from sklearn.model_selection import train_test_split
 import yaml
 import logging
+import mlflow
 
 logger = logging.getLogger('data_ingestion')
 logger.setLevel('DEBUG')
@@ -80,13 +81,18 @@ def save_data(train_data: pd.DataFrame, test_data: pd.DataFrame, data_path: str)
 
 def main():
     try:
+        mlflow.set_experiment("imdb_sentiment_pipeline")
+        mlflow.start_run(run_name="dvc_pipeline_run")
+
         params = load_params(params_path='params.yaml')
         test_size = params['data_ingestion']['test_size']
         
-        df = load_data('ml-pipeline-imdb-movies-review/data/raw/IMDB Dataset.csv')
+        df = load_data('ml-pipeline-imdb-movies-review/data/IMDB Dataset.csv')
         final_df = preprocess_data(df)
         train_data, test_data = train_test_split(final_df, test_size=test_size, random_state=42)
         save_data(train_data, test_data, data_path='ml-pipeline-imdb-movies-review/data')
+
+        mlflow.log_param("test_size", test_size)
     except Exception as e:
         logger.error('Failed to complete the data ingestion process: %s', e)
         print(f"Error: {e}")
