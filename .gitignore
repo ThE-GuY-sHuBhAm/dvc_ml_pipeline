@@ -36,7 +36,7 @@ coverage.xml
 
 # Data (tracked via DVC or scripts)
 data/*
-!data/README.md
+ml-pipeline-imdb-movies-review/data/
 
 # IDEs
 .idea/
@@ -49,3 +49,4 @@ data/*
 # Mypy
 .mypy_cache/
 /reports
+/models

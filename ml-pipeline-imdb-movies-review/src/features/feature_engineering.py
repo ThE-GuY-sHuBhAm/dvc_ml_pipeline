@@ -5,6 +5,8 @@ import os
 import yaml
 import logging
 from sklearn.feature_extraction.text import TfidfVectorizer
+import mlflow
+
 
 logger = logging.getLogger('feature_engineering')
 logger.setLevel('DEBUG')
@@ -100,6 +102,16 @@ def main():
 
         save_data(train_df, os.path.join("ml-pipeline-imdb-movies-review", "data", "processed", "train_tfidf.csv"))
         save_data(test_df, os.path.join("ml-pipeline-imdb-movies-review", "data", "processed", "test_tfidf.csv"))
+
+        mlflow.log_param(
+        "tfidf_max_features",
+        max_features
+        )
+        mlflow.log_param(
+            "tfidf_ngram_range",
+            ngram_range
+        )
+
     except Exception as e:
         logger.error('Failed to complete the feature engineering process: %s', e)
         print(f"Error: {e}")
