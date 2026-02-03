@@ -57,7 +57,7 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     """Preprocess the data."""
     try:
         df = df[:20000]
-        df['sentiment'].replace({'positive': 1, 'negative': 0}, inplace=True)
+        df['sentiment'] = df['sentiment'].replace({'positive': 1, 'negative': 0})
         logger.debug('Data preprocessing completed')
         return df
     except KeyError as e:

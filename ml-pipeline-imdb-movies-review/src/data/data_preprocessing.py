@@ -7,6 +7,8 @@ import yaml
 import logging
 import re
 import string
+import nltk
+nltk.download('stopwords', quiet=True)
 
 logger = logging.getLogger('data_preprocessing')
 logger.setLevel('DEBUG')
