@@ -17,13 +17,15 @@ dagshub_token = os.getenv("DAGSHUB_PAT")
 if not dagshub_token:
     raise EnvironmentError("DAGSHUB_PAT environment variable is not set")
 
-# Set up MLflow tracking URI
-mlflow.set_tracking_uri(
-    "https://dagshub.com/ThE-GuY-sHuBhAm/dvc_ml_pipeline.mlflow"
-)
-
 os.environ["MLFLOW_TRACKING_USERNAME"] = "ThE-GuY-sHuBhAm"
 os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
+
+dagshub_url = "https://dagshub.com"
+repo_owner = "ThE-GuY-sHuBhAm"
+repo_name = "dvc_ml_pipeline"
+
+# Set up MLflow tracking URI
+mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
 
 # Disable autolog to prevent double logging
 mlflow.autolog(disable=True)
