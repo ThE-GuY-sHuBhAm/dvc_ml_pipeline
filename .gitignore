@@ -12,6 +12,7 @@ venv/
 
 # ML artifacts
 reports/
+/models
 
 # Byte-compiled / optimized files
 __pycache__/
