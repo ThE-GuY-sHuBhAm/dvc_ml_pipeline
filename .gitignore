@@ -7,12 +7,12 @@ mlflow.db
 
 # Virtual environments
 myenv/
-*.log
 venv/
+*.log
 
-# ML artifacts
+# ML artifacts (DVC-managed)
 reports/
-/models
+ml-pipeline-imdb-movies-review/models/
 
 # Byte-compiled / optimized files
 __pycache__/
@@ -41,13 +41,11 @@ coverage.xml
 # Environment variables
 .env
 
-# Data (tracked via DVC or scripts)
+# Data (tracked via DVC)
 data/*
 ml-pipeline-imdb-movies-review/data/*
 !ml-pipeline-imdb-movies-review/data/*.dvc
 !ml-pipeline-imdb-movies-review/data/.gitignore
-
-
 
 # IDEs
 .idea/
@@ -59,5 +57,3 @@ ml-pipeline-imdb-movies-review/data/*
 
 # Mypy
 .mypy_cache/
-/reports
-/models
