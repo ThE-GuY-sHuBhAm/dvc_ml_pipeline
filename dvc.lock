@@ -5,8 +5,8 @@ stages:
     deps:
     - path: ml-pipeline-imdb-movies-review/src/data/data_ingestion.py
       hash: md5
-      md5: 0b18c3e3fe5f8af6901ffcc8c44397ce
-      size: 3590
+      md5: 33891c41f9acc0735271e71c1eea5843
+      size: 3601
     params:
       params.yaml:
         data_ingestion.test_size: 0.2
@@ -26,8 +26,8 @@ stages:
       nfiles: 2
     - path: ml-pipeline-imdb-movies-review/src/data/data_preprocessing.py
       hash: md5
-      md5: 1af267d0c898d63bfa9ebac30fd3c863
-      size: 7824
+      md5: 4d7c2f0e584a7c971a23c642a6c41b1e
+      size: 7991
     outs:
     - path: ml-pipeline-imdb-movies-review/data/interim
       hash: md5

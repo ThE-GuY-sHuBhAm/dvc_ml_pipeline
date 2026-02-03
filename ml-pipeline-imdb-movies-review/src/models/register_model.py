@@ -3,15 +3,21 @@ import logging
 import mlflow
 import dagshub
 from mlflow.tracking import MlflowClient
+import os
 
 # --------------------------------------------------
 # 1. SETUP
 # --------------------------------------------------
-dagshub.init(
-    repo_owner="ThE-GuY-sHuBhAm",
-    repo_name="dvc_ml_pipeline",
-    mlflow=True
-)
+dagshub_token = os.getenv("DAGSHUB_PAT")
+if not dagshub_token:
+    raise EnvironmentError("DAGSHUB_PAT environment variable is not set")
+
+os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
+os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
+
+dagshub_url = "https://dagshub.com"
+repo_owner = "ThE-GuY-sHuBhAm"
+repo_name = "dvc_ml_pipeline"
 
 logger = logging.getLogger("model_registration")
 logger.setLevel(logging.DEBUG)
