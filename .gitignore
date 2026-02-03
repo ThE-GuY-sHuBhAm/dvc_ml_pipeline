@@ -42,8 +42,10 @@ coverage.xml
 
 # Data (tracked via DVC or scripts)
 data/*
-ml-pipeline-imdb-movies-review/data/**
-!ml-pipeline-imdb-movies-review/data/**/*.dvc
+ml-pipeline-imdb-movies-review/data/*
+!ml-pipeline-imdb-movies-review/data/*.dvc
+!ml-pipeline-imdb-movies-review/data/.gitignore
+
 
 
 # IDEs
