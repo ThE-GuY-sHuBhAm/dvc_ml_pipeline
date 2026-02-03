@@ -81,7 +81,7 @@ def save_data(train_data: pd.DataFrame, test_data: pd.DataFrame, data_path: str)
 
 def main():
     try:
-        mlflow.set_experiment("imdb_sentiment_pipeline")
+        mlflow.set_experiment("dvc-pipeline-imdb-movies-review")
         mlflow.start_run(run_name="dvc_pipeline_run")
 
         params = load_params(params_path='params.yaml')

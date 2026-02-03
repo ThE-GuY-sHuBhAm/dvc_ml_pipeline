@@ -40,7 +40,11 @@ stages:
     - ml-pipeline-imdb-movies-review/data/processed
     outs:
     - ml-pipeline-imdb-movies-review/reports
- 
+  model_registration:
+    cmd: python ml-pipeline-imdb-movies-review/src/models/register_model.py
+    deps:
+    - ml-pipeline-imdb-movies-review/reports/experiment_info.json
+    - ml-pipeline-imdb-movies-review/src/models/register_model.py
 
 
 # params:
