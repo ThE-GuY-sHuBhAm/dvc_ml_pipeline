@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 import nltk
+from nltk.stem import WordNetLemmatizer
 import yaml
 import logging
 import re
