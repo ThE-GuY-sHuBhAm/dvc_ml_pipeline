@@ -1,3 +1,10 @@
+# AWS
+.aws/
+
+# MLflow (local runs)
+mlruns/
+mlflow.db
+
 # Virtual environments
 myenv/
 *.log
