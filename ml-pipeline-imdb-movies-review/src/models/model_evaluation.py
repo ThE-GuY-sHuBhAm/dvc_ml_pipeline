@@ -11,7 +11,7 @@ import os
 import mlflow.sklearn
 
 # --------------------------------------------------
-# 1. SETUP (Only use dagshub.init)
+# 1. SETUP 
 # --------------------------------------------------
 dagshub_token = os.getenv("DAGSHUB_PAT")
 if not dagshub_token:
@@ -24,10 +24,7 @@ dagshub_url = "https://dagshub.com"
 repo_owner = "ThE-GuY-sHuBhAm"
 repo_name = "dvc_ml_pipeline"
 
-# Set up MLflow tracking URI
 mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
-
-# Disable autolog to prevent double logging
 mlflow.autolog(disable=True)
 
 # --------------------------------------------------
@@ -65,9 +62,11 @@ def main():
 
     with mlflow.start_run() as run:
         try:
-            # 1. Load Resources
             logger.info("Loading model and data...")
             model_path = 'ml-pipeline-imdb-movies-review/models/model.pkl'
+            # Define path for vectorizer
+            vectorizer_path = 'ml-pipeline-imdb-movies-review/models/vectorizer.pkl'
+            
             data_path = 'ml-pipeline-imdb-movies-review/data/processed/test_tfidf.csv'
             
             clf = load_model(model_path)
@@ -76,21 +75,17 @@ def main():
             X_test = test_data.iloc[:, :-1].values
             y_test = test_data.iloc[:, -1].values
 
-            # 2. Evaluate
             metrics, y_pred = evaluate_model(clf, X_test, y_test)
 
-            # 3. Log Params & Metrics
             mlflow.log_params(clf.get_params())
             mlflow.log_metrics(metrics)
 
-            # 4. Save & Log JSON Metrics
             metrics_path = 'ml-pipeline-imdb-movies-review/reports/metrics.json'
             os.makedirs(os.path.dirname(metrics_path), exist_ok=True)
             with open(metrics_path, 'w') as f:
                 json.dump(metrics, f, indent=4)
             mlflow.log_artifact(metrics_path)
 
-            # 5. Log Confusion Matrix
             cm = confusion_matrix(y_test, y_pred)
             disp = ConfusionMatrixDisplay(confusion_matrix=cm)
             fig, ax = plt.subplots(figsize=(6, 6))
@@ -98,24 +93,34 @@ def main():
             mlflow.log_figure(fig, "confusion_matrix.png")
             plt.close(fig)
 
-            # 6. LOG MODEL (CRITICAL FIX)
-            logger.info("Starting Model Upload...")
+            # --------------------------------------------------
+            # 6. LOG MODEL & VECTORIZER
+            # --------------------------------------------------
+            logger.info("Starting Artifact Upload...")
             
-            # Fix: Skip environment capturing to prevent Windows timeouts
+            # Standard MLflow Model log (still keeping this for metadata, even if upload fails on Windows)
             mlflow.sklearn.log_model(
                 sk_model=clf,
                 artifact_path="model",
                 serialization_format="cloudpickle",
-                pip_requirements=[],  # <--- THIS IS THE FIX (Fast upload)
+                pip_requirements=[],
                 metadata={"model_type": "GradientBoostingClassifier"}
             )
             
-            # Backup: Also upload the raw pickle just in case
-            mlflow.log_artifact(model_path, artifact_path="model_backup")
+            # Upload Raw Model Pickle (Backup)
+            if os.path.exists(model_path):
+                mlflow.log_artifact(model_path, artifact_path="model_backup")
+                logger.info("Raw model pickle uploaded.")
             
-            logger.info("Model uploaded successfully.")
+            # Upload Raw Vectorizer Pickle (The Upgrade!)
+            if os.path.exists(vectorizer_path):
+                mlflow.log_artifact(vectorizer_path, artifact_path="model_backup")
+                logger.info("Raw vectorizer pickle uploaded.")
+            else:
+                logger.warning(f"Vectorizer not found at {vectorizer_path}. Did you run feature_engineering?")
+            
+            logger.info("All artifacts uploaded successfully.")
 
-            # 7. Save Run ID for Registration
             info_path = 'ml-pipeline-imdb-movies-review/reports/experiment_info.json'
             with open(info_path, 'w') as f:
                 json.dump({'run_id': run.info.run_id, 'model_path': 'model'}, f, indent=4)

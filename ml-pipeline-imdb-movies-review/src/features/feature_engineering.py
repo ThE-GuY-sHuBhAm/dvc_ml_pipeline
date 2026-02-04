@@ -1,12 +1,11 @@
-import __main__
 import pandas as pd
 import numpy as np
 import os
 import yaml
 import logging
+import pickle  # <--- NEW IMPORT
 from sklearn.feature_extraction.text import TfidfVectorizer
 import mlflow
-
 
 logger = logging.getLogger('feature_engineering')
 logger.setLevel('DEBUG')
@@ -45,6 +44,7 @@ def load_data(file_path: str) -> pd.DataFrame:
     """Load data from a CSV file."""
     try:
         df = pd.read_csv(file_path)
+        df.dropna(subset=['review'], inplace=True)
         logger.debug('Data loaded from %s', file_path)
         return df
     except pd.errors.ParserError as e:
@@ -74,7 +74,9 @@ def apply_tfidf(train_data: pd.DataFrame, test_data: pd.DataFrame, max_features:
         test_df['label'] = y_test
 
         logger.debug('TfIdf applied and data transformed')
-        return train_df, test_df
+        
+        # RETURN THE VECTORIZER ALSO
+        return train_df, test_df, vectorizer
     except Exception as e:
         logger.error('Error during TfIdf transformation: %s', e)
         raise
@@ -89,6 +91,17 @@ def save_data(df: pd.DataFrame, file_path: str) -> None:
         logger.error('Unexpected error occurred while saving the data: %s', e)
         raise
 
+def save_vectorizer(vectorizer, file_path: str) -> None:
+    """Save the vectorizer to a pickle file."""
+    try:
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, 'wb') as file:
+            pickle.dump(vectorizer, file)
+        logger.debug('Vectorizer saved to %s', file_path)
+    except Exception as e:
+        logger.error('Error occurred while saving the vectorizer: %s', e)
+        raise
+
 def main():
     try:
         params = load_params('params.yaml')
@@ -98,19 +111,17 @@ def main():
         train_data = load_data('ml-pipeline-imdb-movies-review/data/interim/train_processed.csv')
         test_data = load_data('ml-pipeline-imdb-movies-review/data/interim/test_processed.csv')
 
-        train_df, test_df = apply_tfidf(train_data, test_data, max_features, ngram_range)
+        # Capture the vectorizer here
+        train_df, test_df, vectorizer = apply_tfidf(train_data, test_data, max_features, ngram_range)
 
         save_data(train_df, os.path.join("ml-pipeline-imdb-movies-review", "data", "processed", "train_tfidf.csv"))
         save_data(test_df, os.path.join("ml-pipeline-imdb-movies-review", "data", "processed", "test_tfidf.csv"))
+        
+        # Save the vectorizer to the 'models' folder
+        save_vectorizer(vectorizer, os.path.join("ml-pipeline-imdb-movies-review", "models", "vectorizer.pkl"))
 
-        mlflow.log_param(
-        "tfidf_max_features",
-        max_features
-        )
-        mlflow.log_param(
-            "tfidf_ngram_range",
-            ngram_range
-        )
+        mlflow.log_param("tfidf_max_features", max_features)
+        mlflow.log_param("tfidf_ngram_range", ngram_range)
 
     except Exception as e:
         logger.error('Failed to complete the feature engineering process: %s', e)
