@@ -3,7 +3,7 @@ import numpy as np
 import os
 import yaml
 import logging
-import pickle  # <--- NEW IMPORT
+import pickle  
 from sklearn.feature_extraction.text import TfidfVectorizer
 import mlflow
 
