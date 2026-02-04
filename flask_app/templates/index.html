@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Sentiment Analysis</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        textarea { width: 100%; height: 100px; margin-bottom: 10px; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+        .positive { background-color: #d4edda; color: #155724; }
+        .negative { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Movie Review Sentiment Analyzer</h1>
+    
+    <form action="/predict" method="post">
+        <label for="text">Enter a movie review:</label><br>
+        <textarea name="text" id="text" required placeholder="Type your review here..."></textarea><br>
+        <button type="submit">Analyze Sentiment</button>
+    </form>
+
+    {% if result is not none %}
+        <div class="result {% if result == 1 %}positive{% else %}negative{% endif %}">
+            <h2>Prediction: 
+                {% if result == 1 %}
+                    🌟 Positive
+                {% else %}
+                    💀 Negative
+                {% endif %}
+            </h2>
+        </div>
+    {% endif %}
+</body>
+</html>

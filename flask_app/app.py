@@ -1,128 +1,172 @@
-from flask import Flask, render_template,request
+from flask import Flask, render_template, request
 import mlflow
 import pickle
 import os
 import pandas as pd
-
 import numpy as np
-import pandas as pd
-import os
 import re
-import nltk
 import string
+import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+from mlflow.tracking import MlflowClient
 
-def lemmatization(text):
-    """Lemmatize the text."""
-    lemmatizer = WordNetLemmatizer()
-    text = text.split()
-    text = [lemmatizer.lemmatize(word) for word in text]
-    return " ".join(text)
+# ---------------------------------------------------------
+# 1. ROBUST NLTK SETUP
+# ---------------------------------------------------------
+# We download 'omw-1.4' too, which is often needed for Lemmatizer
+resources = ['stopwords', 'wordnet', 'omw-1.4']
+for resource in resources:
+    try:
+        nltk.data.find(f'corpora/{resource}')
+    except LookupError:
+        nltk.download(resource)
 
-def remove_stop_words(text):
-    """Remove stop words from the text."""
-    stop_words = set(stopwords.words("english"))
-    text = [word for word in str(text).split() if word not in stop_words]
-    return " ".join(text)
-
-def removing_numbers(text):
-    """Remove numbers from the text."""
-    text = ''.join([char for char in text if not char.isdigit()])
-    return text
-
+# ---------------------------------------------------------
+# 2. PREPROCESSING FUNCTIONS (Fixed Logic Order)
+# ---------------------------------------------------------
 def lower_case(text):
-    """Convert text to lower case."""
-    text = text.split()
-    text = [word.lower() for word in text]
-    return " ".join(text)
-
-def removing_punctuations(text):
-    """Remove punctuations from the text."""
-    text = re.sub('[%s]' % re.escape(string.punctuation), ' ', text)
-    text = text.replace('؛', "")
-    text = re.sub('\s+', ' ', text).strip()
-    return text
+    return text.lower()
 
 def removing_urls(text):
-    """Remove URLs from the text."""
     url_pattern = re.compile(r'https?://\S+|www\.\S+')
     return url_pattern.sub(r'', text)
 
-def remove_small_sentences(df):
-    """Remove sentences with less than 3 words."""
-    for i in range(len(df)):
-        if len(df.text.iloc[i].split()) < 3:
-            df.text.iloc[i] = np.nan
-
-def normalize_text(text):
-    text = lower_case(text)
-    text = remove_stop_words(text)
-    text = removing_numbers(text)
-    text = removing_punctuations(text)
-    text = removing_urls(text)
-    text = lemmatization(text)
-
+def removing_punctuations(text):
+    # Remove punctuation
+    text = re.sub('[%s]' % re.escape(string.punctuation), ' ', text)
+    # Remove extra spaces
+    text = re.sub(r'\s+', ' ', text).strip()
     return text
 
+def removing_numbers(text):
+    return ''.join([char for char in text if not char.isdigit()])
 
-# Set up DagsHub credentials for MLflow tracking
+def remove_stop_words(text):
+    stop_words = set(stopwords.words("english"))
+    return " ".join([word for word in text.split() if word not in stop_words])
+
+def lemmatization(text):
+    lemmatizer = WordNetLemmatizer()
+    return " ".join([lemmatizer.lemmatize(word) for word in text.split()])
+
+def normalize_text(text):
+    # 1. Clean noise first
+    text = lower_case(text)
+    text = removing_urls(text)
+    text = removing_punctuations(text) # Important: remove punct BEFORE stop words
+    text = removing_numbers(text)
+    
+    # 2. Semantic processing
+    text = remove_stop_words(text)
+    text = lemmatization(text)
+    return text
+
+# ---------------------------------------------------------
+# 3. MLFLOW & DAGSHUB SETUP
+# ---------------------------------------------------------
 dagshub_token = os.getenv("DAGSHUB_PAT")
 if not dagshub_token:
     raise EnvironmentError("DAGSHUB_PAT environment variable is not set")
 
-os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
+os.environ["MLFLOW_TRACKING_USERNAME"] = "ThE-GuY-sHuBhAm"
 os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
 
 dagshub_url = "https://dagshub.com"
 repo_owner = "ThE-GuY-sHuBhAm"
 repo_name = "dvc_ml_pipeline"
-
-# Set up MLflow tracking URI
 mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
 
 app = Flask(__name__)
 
-# load model from model registry
-def get_latest_model_version(model_name):
-    client = mlflow.MlflowClient()
-    latest_version = client.get_latest_versions(model_name, stages=["Production"])
-    if not latest_version:
-        latest_version = client.get_latest_versions(model_name, stages=["None"])
-    return latest_version[0].version if latest_version else None
+# ---------------------------------------------------------
+# 4. LOAD MODEL & VECTORIZER (From Registry Backup)
+# ---------------------------------------------------------
+print("⏳ Connecting to Model Registry...")
+client = MlflowClient()
 
-model_name = "my_model"
-model_version = get_latest_model_version(model_name)
+# We look for "Staging" because that's where we put the working model
+try:
+    latest_versions = client.get_latest_versions("model", stages=["Staging"])
+    if not latest_versions:
+        # Fallback to None only if Staging is empty
+        latest_versions = client.get_latest_versions("model", stages=["None"])
+    
+    if not latest_versions:
+        raise Exception("No models found in Registry.")
 
-model_uri = f'models:/{model_name}/{model_version}'
-model = mlflow.pyfunc.load_model(model_uri)
+    run_id = latest_versions[0].run_id
+    print(f"📥 Downloading artifacts from Run ID: {run_id}...")
 
-vectorizer = pickle.load(open('models/vectorizer.pkl','rb'))
+    # Download the backup folder containing BOTH pickles
+    local_path = mlflow.artifacts.download_artifacts(
+        run_id=run_id, 
+        artifact_path="model_backup"
+    )
+    
+    # Load Model
+    model_path = os.path.join(local_path, "model.pkl")
+    with open(model_path, "rb") as f:
+        model = pickle.load(f)
+        
+    # Load Vectorizer (From the same run!)
+    vec_path = os.path.join(local_path, "vectorizer.pkl")
+    if not os.path.exists(vec_path):
+        # Fallback for older runs where vectorizer wasn't uploaded
+        print("⚠️ Vectorizer not found in run. Attempting local fallback...")
+        vec_path = 'ml-pipeline-imdb-movies-review/models/vectorizer.pkl'
+        
+    with open(vec_path, "rb") as f:
+        vectorizer = pickle.load(f)
+        
+    print("✅ Model and Vectorizer loaded successfully!")
 
+except Exception as e:
+    print(f"❌ Critical Error Loading Model: {e}")
+    # We don't exit here so Flask can still start (showing error in logs)
+
+# ---------------------------------------------------------
+# 5. FLASK ROUTES
+# ---------------------------------------------------------
 @app.route('/')
 def home():
-    return render_template('index.html',result=None)
+    return render_template('index.html', result=None)
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    try:
+        original_text = request.form['text']
+        
+        # 1. Preprocess
+        clean_text = normalize_text(original_text)
+        
+        # DEBUG LOGS
+        print("\n" + "="*30)
+        print(f"INPUT: {original_text}")
+        print(f"CLEAN: {clean_text}")
 
-    text = request.form['text']
+        # 2. Vectorize
+        features = vectorizer.transform([clean_text])
+        
+        # DEBUG LOGS
+        print(f"VECTOR SUM: {features.sum()}")
+        if features.sum() == 0:
+            print("⚠️ WARNING: Vector is empty! Prediction will be default (Positive).")
 
-    # clean
-    text = normalize_text(text)
+        # 3. Predict (Using numpy array directly)
+        # Note: We use .toarray() because GradientBoosting expects dense or array-like
+        prediction = model.predict(features.toarray())[0]
+        proba = model.predict_proba(features.toarray())[0]
+        
+        print(f"PREDICTION: {prediction}")
+        print(f"PROBABILITY: {proba}") # e.g., [0.1, 0.9]
+        print("="*30 + "\n")
 
-    # bow
-    features = vectorizer.transform([text])
-
-    # Convert sparse matrix to DataFrame
-    features_df = pd.DataFrame.sparse.from_spmatrix(features)
-    features_df = pd.DataFrame(features.toarray(), columns=[str(i) for i in range(features.shape[1])])
-
-    # prediction
-    result = model.predict(features_df)
-
-    # show
-    return render_template('index.html', result=result[0])
+        return render_template('index.html', result=prediction)
+    
+    except Exception as e:
+        print(f"Prediction Error: {e}")
+        return render_template('index.html', result=None)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
