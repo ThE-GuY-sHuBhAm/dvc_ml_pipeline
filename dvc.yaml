@@ -24,6 +24,7 @@ stages:
     - feature_engineering.ngram_range
     outs:
     - ml-pipeline-imdb-movies-review/data/processed
+    - ml-pipeline-imdb-movies-review/models/vectorizer.pkl
   model_building:
     cmd: python ml-pipeline-imdb-movies-review/src/models/model_building.py
     deps:
@@ -32,7 +33,7 @@ stages:
     - model_building.n_estimators
     - model_building.learning_rate
     outs:
-    - ml-pipeline-imdb-movies-review/models
+    - ml-pipeline-imdb-movies-review/models/model.pkl
   model_evaluation:
     cmd: python ml-pipeline-imdb-movies-review/src/models/model_evaluation.py
     deps:
@@ -45,6 +46,12 @@ stages:
     deps:
     - ml-pipeline-imdb-movies-review/reports/experiment_info.json
     - ml-pipeline-imdb-movies-review/src/models/register_model.py
+  model_testing:
+    cmd: python tests/test_model.py
+    deps:
+    - tests/test_model.py
+    - ml-pipeline-imdb-movies-review/data/processed/test_tfidf.csv
+    - ml-pipeline-imdb-movies-review/models/vectorizer.pkl
 
 
 # params:
