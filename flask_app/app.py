@@ -11,10 +11,8 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from mlflow.tracking import MlflowClient
 
-# ---------------------------------------------------------
+
 # 1. ROBUST NLTK SETUP
-# ---------------------------------------------------------
-# We download 'omw-1.4' too, which is often needed for Lemmatizer
 resources = ['stopwords', 'wordnet', 'omw-1.4']
 for resource in resources:
     try:
@@ -22,9 +20,8 @@ for resource in resources:
     except LookupError:
         nltk.download(resource)
 
-# ---------------------------------------------------------
+
 # 2. PREPROCESSING FUNCTIONS (Fixed Logic Order)
-# ---------------------------------------------------------
 def lower_case(text):
     return text.lower()
 
@@ -62,9 +59,8 @@ def normalize_text(text):
     text = lemmatization(text)
     return text
 
-# ---------------------------------------------------------
+
 # 3. MLFLOW & DAGSHUB SETUP
-# ---------------------------------------------------------
 dagshub_token = os.getenv("DAGSHUB_PAT")
 if not dagshub_token:
     raise EnvironmentError("DAGSHUB_PAT environment variable is not set")
@@ -79,13 +75,11 @@ mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
 
 app = Flask(__name__)
 
-# ---------------------------------------------------------
 # 4. LOAD MODEL & VECTORIZER (From Registry Backup)
-# ---------------------------------------------------------
 print("⏳ Connecting to Model Registry...")
 client = MlflowClient()
 
-# We look for "Staging" because that's where we put the working model
+
 try:
     latest_versions = client.get_latest_versions("model", stages=["Staging"])
     if not latest_versions:
@@ -96,9 +90,9 @@ try:
         raise Exception("No models found in Registry.")
 
     run_id = latest_versions[0].run_id
-    print(f"📥 Downloading artifacts from Run ID: {run_id}...")
+    print(f"Downloading artifacts from Run ID: {run_id}...")
 
-    # Download the backup folder containing BOTH pickles
+    
     local_path = mlflow.artifacts.download_artifacts(
         run_id=run_id, 
         artifact_path="model_backup"
@@ -109,25 +103,21 @@ try:
     with open(model_path, "rb") as f:
         model = pickle.load(f)
         
-    # Load Vectorizer (From the same run!)
+    # Load Vectorizer
     vec_path = os.path.join(local_path, "vectorizer.pkl")
     if not os.path.exists(vec_path):
-        # Fallback for older runs where vectorizer wasn't uploaded
-        print("⚠️ Vectorizer not found in run. Attempting local fallback...")
+        print("Vectorizer not found in run. Attempting local fallback...")
         vec_path = 'ml-pipeline-imdb-movies-review/models/vectorizer.pkl'
         
     with open(vec_path, "rb") as f:
         vectorizer = pickle.load(f)
         
-    print("✅ Model and Vectorizer loaded successfully!")
+    print("Model and Vectorizer loaded successfully!")
 
 except Exception as e:
-    print(f"❌ Critical Error Loading Model: {e}")
-    # We don't exit here so Flask can still start (showing error in logs)
+    print(f"Critical Error Loading Model: {e}")
 
-# ---------------------------------------------------------
-# 5. FLASK ROUTES
-# ---------------------------------------------------------
+
 @app.route('/')
 def home():
     return render_template('index.html', result=None)
@@ -154,7 +144,6 @@ def predict():
             print("⚠️ WARNING: Vector is empty! Prediction will be default (Positive).")
 
         # 3. Predict (Using numpy array directly)
-        # Note: We use .toarray() because GradientBoosting expects dense or array-like
         prediction = model.predict(features.toarray())[0]
         proba = model.predict_proba(features.toarray())[0]
         
