@@ -124,7 +124,7 @@ def main():
         mlflow.log_param("tfidf_ngram_range", ngram_range)
 
     except Exception as e:
-        logger.error('Failed to complete the feature engineering process: %s', e)
+        logger.error('Failed to complete feature engineering process: %s', e)
         print(f"Error: {e}")
 
 if __name__ == '__main__':
