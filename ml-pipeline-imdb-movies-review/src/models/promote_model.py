@@ -23,19 +23,19 @@ def promote_model():
     # ---------------------------------------------------------
     # 2. SELECT MODEL
     # ---------------------------------------------------------
-    model_name = "model"  # <--- FIXED: Must match register_model.py
+    model_name = "model"  
 
     # Get the latest version in staging
     staging_versions = client.get_latest_versions(model_name, stages=["Staging"])
     
     if not staging_versions:
-        print(f"⚠️ No models found in 'Staging' for '{model_name}'. Promotion aborted.")
+        print(f"No models found in 'Staging' for '{model_name}'. Promotion aborted.")
         return
 
     # Use the most recent Staging version
     latest_staging_version = staging_versions[0].version
     run_id = staging_versions[0].run_id
-    print(f"✅ Found Model Version {latest_staging_version} in Staging (Run ID: {run_id})")
+    print(f"Found Model Version {latest_staging_version} in Staging (Run ID: {run_id})")
 
     # ---------------------------------------------------------
     # 3. ARCHIVE OLD PRODUCTION MODELS
@@ -54,7 +54,7 @@ def promote_model():
     # ---------------------------------------------------------
     # 4. PROMOTE NEW MODEL
     # ---------------------------------------------------------
-    print(f"🚀 Promoting Version {latest_staging_version} to Production...")
+    print(f"Promoting Version {latest_staging_version} to Production...")
     client.transition_model_version_stage(
         name=model_name,
         version=latest_staging_version,

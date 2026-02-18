@@ -43,13 +43,25 @@ def lemmatization(texts):
     text = [lemmatizer.lemmatize(word) for word in text]
     return " ".join(text)
 
-def remove_stop_words(texts):
-    """Remove stop words from the text."""
-    from nltk.corpus import stopwords
+from nltk.corpus import stopwords
+
+def remove_stop_words(text):
     stop_words = set(stopwords.words('english'))
-    text = texts.split()
-    text = [word for word in text if word.lower() not in stop_words]
-    return " ".join(text)
+
+    # Words that MUST stay for sentiment meaning
+    negation_words = {
+        "no", "not", "nor", "never", "none", "n't",
+        "cannot", "can't", "don't", "didn't", "won't", "isn't", "aren't", "wasn't", "weren't", "shouldn't", "wouldn't", "couldn't"
+    }
+
+    # Remove negations from stopword list
+    stop_words = stop_words - negation_words
+
+    words = text.split()
+    filtered = [w for w in words if w.lower() not in stop_words]
+
+    return " ".join(filtered)
+
 
 def lower_case(text):
     """Convert text to lower case."""
