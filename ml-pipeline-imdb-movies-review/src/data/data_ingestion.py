@@ -89,7 +89,7 @@ def main():
         
         df = load_data('ml-pipeline-imdb-movies-review/data/imdb_dataset.csv')
         final_df = preprocess_data(df)
-        train_data, test_data = train_test_split(final_df, test_size=test_size, random_state=42)
+        train_data, test_data = train_test_split(final_df,test_size=test_size,stratify=final_df["sentiment"],random_state=42)
         save_data(train_data, test_data, data_path='ml-pipeline-imdb-movies-review/data')
 
         mlflow.log_param("test_size", test_size)

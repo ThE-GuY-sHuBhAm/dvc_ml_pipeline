@@ -2,6 +2,7 @@ from fastapi import params
 import pandas as pd
 import numpy as np
 import os
+from sklearn.model_selection import StratifiedKFold, cross_val_score
 import yaml
 import logging
 from sklearn.ensemble import GradientBoostingClassifier
@@ -60,9 +61,14 @@ def train_model(X_train: np.ndarray, y_train: np.ndarray, params: dict) -> Gradi
     """Train the Gradient Boosting model."""
     try:
         clf = GradientBoostingClassifier(n_estimators=params['n_estimators'], learning_rate=params['learning_rate'])
+        skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+        cv_scores = cross_val_score(clf,X_train,y_train,cv=skf,scoring="f1")
+        mean_cv = np.mean(cv_scores)
+        logger.debug('Cross-validation scores: %s', cv_scores)
+        logger.debug('Mean cross-validation score: %s', mean_cv)
         clf.fit(X_train, y_train)
         logger.debug('Model training completed')
-        return clf
+        return clf, mean_cv
     except Exception as e:
         logger.error('Error during model training: %s', e)
         raise
@@ -86,12 +92,13 @@ def main():
         X_train = train_data.iloc[:, :-1].values
         y_train = train_data.iloc[:, -1].values
 
-        clf = train_model(X_train, y_train, params)
+        clf, cv_score = train_model(X_train, y_train, params)
         
         save_model(clf, 'ml-pipeline-imdb-movies-review/models/model.pkl')
 
         mlflow.log_param("n_estimators", params["n_estimators"])
         mlflow.log_param("learning_rate", params["learning_rate"])
+        mlflow.log_metric("cv_score_f1", cv_score)
 
 
     except Exception as e:

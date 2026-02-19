@@ -33,7 +33,7 @@ class TestModelLoading(unittest.TestCase):
             
         run_id = latest_versions[0].run_id
         
-        # 3. DOWNLOAD & LOAD RAW MODEL (The Fix)
+        # 3. DOWNLOAD & LOAD RAW MODEL
         print(f"Downloading model artifact from Run ID: {run_id}...")
         try:
             # Download the 'model_backup' folder
