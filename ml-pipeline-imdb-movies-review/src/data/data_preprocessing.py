@@ -45,31 +45,12 @@ def lemmatization(texts):
 
 from nltk.corpus import stopwords
 
-def remove_stop_words(text):
-    text = text.lower()
-
-    # Normalize contractions
-    text = re.sub(r"n't", " not", text)
-    text = re.sub(r"'re", " are", text)
-    text = re.sub(r"'s", " is", text)
-    text = re.sub(r"'d", " would", text)
-    text = re.sub(r"'ll", " will", text)
-    text = re.sub(r"'ve", " have", text)
-    text = re.sub(r"'m", " am", text)
-
-    words = text.split()
-
-    stop_words = set(stopwords.words('english'))
-
-    negation_words = {
-        "no", "not", "nor", "never", "none"
-    }
-
-    # Keep negations
-    stop_words = stop_words - negation_words
-
-    filtered = [w for w in words if w not in stop_words]
-
+def remove_stop_words(text): 
+    stop_words = set(stopwords.words('english'))  
+    negation_words = { "no", "not", "nor", "never", "none", "n't", "cannot", "can't", "don't", "didn't", "won't", "isn't", "aren't", "wasn't", "weren't", "shouldn't", "wouldn't", "couldn't" } # Remove negations from stopword list 
+    stop_words = stop_words - negation_words 
+    words = text.split() 
+    filtered = [w for w in words if w.lower() not in stop_words] 
     return " ".join(filtered)
 
 
