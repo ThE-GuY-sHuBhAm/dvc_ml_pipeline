@@ -96,11 +96,11 @@ class TestModelLoading(unittest.TestCase):
         recall_new = recall_score(y_holdout, y_pred_new)
         f1_new = f1_score(y_holdout, y_pred_new)
 
-        # Thresholds (Lowered slightly for safety, adjust as needed)
-        expected_accuracy = 0.40
-        expected_precision = 0.40
-        expected_recall = 0.40
-        expected_f1 = 0.40
+        # Thresholds based on previous model performance (these are just examples, adjust as needed) 
+        expected_accuracy = 0.80
+        expected_precision = 0.78
+        expected_recall = 0.85
+        expected_f1 = 0.81
 
         print(f"\nTest Metrics -> Acc: {accuracy_new:.2f}, Prec: {precision_new:.2f}, Rec: {recall_new:.2f}, F1: {f1_new:.2f}")
 

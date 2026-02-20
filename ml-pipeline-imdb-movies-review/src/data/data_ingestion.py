@@ -56,7 +56,6 @@ def load_data(file_path: str) -> pd.DataFrame:
 def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     """Preprocess the data."""
     try:
-        df = df[:20000]
         df.loc[:, 'sentiment'] = df['sentiment'].replace({'positive': 1, 'negative': 0})
         logger.debug('Data preprocessing completed')
         return df

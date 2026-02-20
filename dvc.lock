@@ -5,24 +5,24 @@ stages:
     deps:
     - path: ml-pipeline-imdb-movies-review/src/data/data_ingestion.py
       hash: md5
-      md5: 3ba55e403628990b3a1b442996bfc773
-      size: 3630
+      md5: cc450bc7cfaef2785f76cef117fecdf1
+      size: 3605
     params:
       params.yaml:
         data_ingestion.test_size: 0.2
     outs:
     - path: ml-pipeline-imdb-movies-review/data/raw
       hash: md5
-      md5: abac4a17a6441502217dcea94874082b.dir
-      size: 26365344
+      md5: 21d242d49404d9a12613170c239b39e7.dir
+      size: 65912328
       nfiles: 2
   data_preprocessing:
     cmd: python ml-pipeline-imdb-movies-review/src/data/data_preprocessing.py
     deps:
     - path: ml-pipeline-imdb-movies-review/data/raw
       hash: md5
-      md5: abac4a17a6441502217dcea94874082b.dir
-      size: 26365344
+      md5: 21d242d49404d9a12613170c239b39e7.dir
+      size: 65912328
       nfiles: 2
     - path: ml-pipeline-imdb-movies-review/src/data/data_preprocessing.py
       hash: md5
@@ -31,8 +31,8 @@ stages:
     outs:
     - path: ml-pipeline-imdb-movies-review/data/interim
       hash: md5
-      md5: 46e9a6d1c0ae38614677b2c212a39eb9.dir
-      size: 16302075
+      md5: 71bbca1435dc199d7790f10c999aa8e7.dir
+      size: 40760191
       nfiles: 2
   feature_engineering:
     cmd: python 
@@ -40,8 +40,8 @@ stages:
     deps:
     - path: ml-pipeline-imdb-movies-review/data/interim
       hash: md5
-      md5: 46e9a6d1c0ae38614677b2c212a39eb9.dir
-      size: 16302075
+      md5: 71bbca1435dc199d7790f10c999aa8e7.dir
+      size: 40760191
       nfiles: 2
     params:
       params.yaml:
@@ -52,20 +52,20 @@ stages:
     outs:
     - path: ml-pipeline-imdb-movies-review/data/processed
       hash: md5
-      md5: d29cd3028708e53e6b1e44ed83fed370.dir
-      size: 831150754
+      md5: 53a36e4f2478bb46cba65993781e7677.dir
+      size: 2077633740
       nfiles: 2
     - path: ml-pipeline-imdb-movies-review/models/vectorizer.pkl
       hash: md5
-      md5: f81b4cdaf8deca9835b16e7fde05a211
-      size: 379434
+      md5: c5863f783c2010df47c46c5e3cb4c5f1
+      size: 379224
   model_building:
     cmd: python ml-pipeline-imdb-movies-review/src/models/model_building.py
     deps:
     - path: ml-pipeline-imdb-movies-review/data/processed
       hash: md5
-      md5: d29cd3028708e53e6b1e44ed83fed370.dir
-      size: 831150754
+      md5: 53a36e4f2478bb46cba65993781e7677.dir
+      size: 2077633740
       nfiles: 2
     params:
       params.yaml:
@@ -74,26 +74,26 @@ stages:
     outs:
     - path: ml-pipeline-imdb-movies-review/models/model.pkl
       hash: md5
-      md5: e736d564da1df89569cdc3b795d90b1c
-      size: 139453
+      md5: e4cca68c9319a0ddbb5a3dd3c86dd154
+      size: 139454
   model_evaluation:
     cmd: python ml-pipeline-imdb-movies-review/src/models/model_evaluation.py
     deps:
     - path: ml-pipeline-imdb-movies-review/data/processed
       hash: md5
-      md5: d29cd3028708e53e6b1e44ed83fed370.dir
-      size: 831150754
+      md5: 53a36e4f2478bb46cba65993781e7677.dir
+      size: 2077633740
       nfiles: 2
     - path: ml-pipeline-imdb-movies-review/src/models
       hash: md5
-      md5: 9dde60f5000b585f63b710e56e61d657.dir
-      size: 15398
+      md5: c5bb022ba516d76e7d08b420231253fb.dir
+      size: 16608
       nfiles: 5
     outs:
     - path: ml-pipeline-imdb-movies-review/reports
       hash: md5
-      md5: 8d80aa5748e9c1134304cbf6016af09a.dir
-      size: 257
+      md5: d94286323f0b27d4f5631133f20d4ba1.dir
+      size: 240
       nfiles: 2
   register_model:
     cmd: python ml-pipeline-imdb-movies-review/src/models/register_model.py
@@ -112,7 +112,7 @@ stages:
     deps:
     - path: ml-pipeline-imdb-movies-review/reports/experiment_info.json
       hash: md5
-      md5: 49e3943abf5f43f5895101308e790624
+      md5: 883d9cd7286e08995c9deb286227425a
       size: 82
     - path: ml-pipeline-imdb-movies-review/src/models/register_model.py
       hash: md5
@@ -123,13 +123,13 @@ stages:
     deps:
     - path: ml-pipeline-imdb-movies-review/data/processed/test_tfidf.csv
       hash: md5
-      md5: b892792ce774d673141bc9bfa620b87b
-      size: 166198664
+      md5: 29b1513c2beed8e37816934528cbdca6
+      size: 415459958
     - path: ml-pipeline-imdb-movies-review/models/vectorizer.pkl
       hash: md5
-      md5: f81b4cdaf8deca9835b16e7fde05a211
-      size: 379434
+      md5: c5863f783c2010df47c46c5e3cb4c5f1
+      size: 379224
     - path: tests/test_model.py
       hash: md5
-      md5: bba09eb2e992fb105601ba2ad7bcda6a
-      size: 4567
+      md5: 6f3706940514bdda849881703926703a
+      size: 4600

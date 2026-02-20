@@ -1,4 +1,3 @@
-from fastapi import params
 import pandas as pd
 import numpy as np
 import os
@@ -9,6 +8,7 @@ from sklearn.ensemble import GradientBoostingClassifier
 import pickle
 import mlflow
 import mlflow.sklearn
+from typing import Tuple
 
 
 logger = logging.getLogger('model_building')
@@ -57,7 +57,7 @@ def load_data(file_path: str) -> pd.DataFrame:
         logger.error('Unexpected error occurred while loading the data: %s', e)
         raise
 
-def train_model(X_train: np.ndarray, y_train: np.ndarray, params: dict) -> GradientBoostingClassifier:
+def train_model(X_train: np.ndarray, y_train: np.ndarray, params: dict) -> Tuple[GradientBoostingClassifier, float]:
     """Train the Gradient Boosting model."""
     try:
         clf = GradientBoostingClassifier(n_estimators=params['n_estimators'], learning_rate=params['learning_rate'])
@@ -74,7 +74,7 @@ def train_model(X_train: np.ndarray, y_train: np.ndarray, params: dict) -> Gradi
         raise
 
 def save_model(model, file_path: str) -> None:
-    """Save the trained model to a file."""
+    """Save the trained model"""
     try:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, 'wb') as file:
